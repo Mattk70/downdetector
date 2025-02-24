@@ -1,0 +1,2 @@
+# downdetector
+Check internet status
