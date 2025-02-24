@@ -1,0 +1,45 @@
+name: Network Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write  # Allow workflow to push logs
+
+jobs:
+  check_network:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Check Network Connectivity
+        run: |
+          IP_ADDRESS="154.56.232.180"
+          LOG_FILE="network_log.csv"
+          TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+
+          # Ensure file exists with headers
+          if [ ! -f "$LOG_FILE" ]; then
+            echo "timestamp,status" > "$LOG_FILE"
+          fi
+
+          # Check connectivity
+          if ping -c 1 "$IP_ADDRESS" > /dev/null; then
+              STATUS="up"
+          else
+              STATUS="down"
+          fi
+          
+          # Append to log
+          echo "$TIMESTAMP,$STATUS" >> "$LOG_FILE"
+
+      - name: Commit and Push Logs
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add network_log.csv
+          git commit -m "Updated network status log" || exit 0
+          git push
