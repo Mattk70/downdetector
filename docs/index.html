@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Uptime Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        img { max-width: 90%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Network Uptime Dashboard</h1>
+    <p>Last updated: <span id="lastUpdated"></span></p>
+    <img id="chart" src="network_uptime_chart.png" alt="Network Uptime Chart">
+    
+    <script>
+        async function fetchLastCommit() {
+            try {
+                let response = await fetch("https://api.github.com/repos/Mattk70/downdetector/commits?per_page=1");
+                let data = await response.json();
+                document.getElementById("lastUpdated").innerText = new Date(data[0].commit.committer.date).toLocaleString();
+            } catch (error) {
+                console.error("Error fetching last update:", error);
+            }
+        }
+        fetchLastCommit();
+    </script>
+</body>
+</html>
