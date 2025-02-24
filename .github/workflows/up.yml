@@ -1,50 +1,55 @@
 name: Network Monitor
 
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
+  workflow_dispatch:  # Allows manual trigger
+
+permissions:
+  contents: write
 
 jobs:
-  update-network-uptime:
+  check_network:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Check Network Connectivity
+        run: |
+          IP_ADDRESS="your_home_ip_here"
+          LOG_FILE="docs/network_log.csv"
+          TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+
+          if [ ! -f "$LOG_FILE" ]; then
+            echo "timestamp,status" > "$LOG_FILE"
+          fi
+
+          if ping -c 1 "$IP_ADDRESS" > /dev/null; then
+              STATUS="up"
+          else
+              STATUS="down"
+          fi
+          
+          echo "$TIMESTAMP,$STATUS" >> "$LOG_FILE"
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
+          cache: "pip"
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Run network status plot
-        run: |
-          python plot_network.py
+      - name: Generate Uptime Chart
+        run: python plot_network.py
 
-      - name: Configure git
+      - name: Commit and Push Updates
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-
-      - name: Stash changes
-        run: |
-          git stash
-
-      - name: Pull remote changes
-        run: |
-          git pull --rebase
-
-      - name: Apply stashed changes
-        run: |
-          git stash pop || true
-
-      - name: Commit and push changes
-        run: |
           git add docs/
           git commit -m "Updated network uptime data and chart" || exit 0
           git push
