@@ -2,11 +2,11 @@ name: Network Monitor
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Runs every 5 minutes
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
-  contents: write  # Allow workflow to push logs
+  contents: write
 
 jobs:
   check_network:
@@ -17,29 +17,49 @@ jobs:
 
       - name: Check Network Connectivity
         run: |
-          IP_ADDRESS="154.56.232.180"
-          LOG_FILE="network_log.csv"
+          IP_ADDRESS="your_home_ip_here"
+          LOG_FILE="docs/network_log.csv"
           TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
-          # Ensure file exists with headers
           if [ ! -f "$LOG_FILE" ]; then
             echo "timestamp,status" > "$LOG_FILE"
           fi
 
-          # Check connectivity
           if ping -c 1 "$IP_ADDRESS" > /dev/null; then
               STATUS="up"
           else
               STATUS="down"
           fi
           
-          # Append to log
           echo "$TIMESTAMP,$STATUS" >> "$LOG_FILE"
 
-      - name: Commit and Push Logs
+      - name: Install Python & Generate Chart
+        run: |
+          sudo apt-get install -y python3 python3-pip
+          pip install pandas matplotlib
+          python <<EOF
+          import pandas as pd
+          import matplotlib.pyplot as plt
+
+          df = pd.read_csv("docs/network_log.csv")
+          df['timestamp'] = pd.to_datetime(df['timestamp'])
+          df['status'] = df['status'].map({'up': 1, 'down': 0})
+
+          plt.figure(figsize=(12, 6))
+          plt.plot(df['timestamp'], df['status'], drawstyle="steps-post", label="Uptime", color='green')
+          plt.xlabel("Time")
+          plt.ylabel("Status")
+          plt.title("Network Uptime History")
+          plt.yticks([0, 1], ["Down", "Up"])
+          plt.legend()
+          plt.grid()
+          plt.savefig("docs/network_uptime_chart.png")
+          EOF
+
+      - name: Commit and Push Updates
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add network_log.csv
-          git commit -m "Updated network status log" || exit 0
+          git add docs/
+          git commit -m "Updated network uptime data and chart" || exit 0
           git push
