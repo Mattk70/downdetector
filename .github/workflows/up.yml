@@ -46,12 +46,12 @@ jobs:
       - name: Generate Uptime Chart
         run: python plot_network.py
 
-- name: Commit and Push Updates
-  run: |
-    git config --global user.name "github-actions"
-    git config --global user.email "github-actions@github.com"
-    
-    git pull --rebase  # Pull remote changes before pushing
-    git add docs/
-    git commit -m "Updated network uptime data and chart" || exit 0
-    git push
+      - name: Commit and Push Updates
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          
+          git pull --rebase  # Pull remote changes before pushing
+          git add docs/
+          git commit -m "Updated network uptime data and chart" || exit 0
+          git push
