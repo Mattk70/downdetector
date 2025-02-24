@@ -3,28 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Uptime Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        img { max-width: 90%; margin-top: 20px; }
-    </style>
+    <title>Network Uptime</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Network Uptime Dashboard</h1>
-    <p>Last updated: <span id="lastUpdated"></span></p>
-    <img id="chart" src="network_uptime_chart.png" alt="Network Uptime Chart">
-    
+    <h1>Network Uptime</h1>
+    <canvas id="uptimeChart"></canvas>
+
     <script>
-        async function fetchLastCommit() {
-            try {
-                let response = await fetch("https://api.github.com/repos/Mattk70/downdetector/commits?per_page=1");
-                let data = await response.json();
-                document.getElementById("lastUpdated").innerText = new Date(data[0].commit.committer.date).toLocaleString();
-            } catch (error) {
-                console.error("Error fetching last update:", error);
-            }
+        async function fetchData() {
+            const response = await fetch('network_log.csv'); // Adjust path if needed
+            const data = await response.text();
+            
+            const labels = [];
+            const values = [];
+
+            // Parse CSV (assuming "timestamp,uptime" format)
+            const rows = data.split("\n").slice(1);
+            rows.forEach(row => {
+                const [timestamp, uptime] = row.split(",");
+                if (timestamp && uptime) {
+                    labels.push(timestamp);
+                    values.push(parseFloat(uptime));
+                }
+            });
+
+            // Draw Chart
+            new Chart(document.getElementById("uptimeChart"), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Uptime (%)",
+                        data: values,
+                        borderColor: "blue",
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: "Timestamp" } },
+                        y: { title: { display: true, text: "Uptime (%)" }, min: 0, max: 100 }
+                    }
+                }
+            });
         }
-        fetchLastCommit();
+
+        fetchData();
     </script>
 </body>
 </html>
