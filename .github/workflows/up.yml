@@ -35,15 +35,15 @@ jobs:
           
           echo "$TIMESTAMP,$STATUS" >> "$LOG_FILE"
 
-- name: Commit and Push Updates
-  run: |
-    git config --global user.name "github-actions"
-    git config --global user.email "github-actions@github.com"
-
-    git add -A  # Stage all changes
-    git commit -m "Updated network uptime log" || exit 0
-
-    # Ensure the latest changes are fetched and rebased
-    git pull --rebase --autostash origin main
-
-    git push
+      - name: Commit and Push Updates
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+      
+          git add -A  # Stage all changes
+          git commit -m "Updated network uptime log" || exit 0
+      
+          # Ensure the latest changes are fetched and rebased
+          git pull --rebase --autostash origin main
+      
+          git push
