@@ -17,7 +17,7 @@ jobs:
 
       - name: Check Network Connectivity
         run: |
-          IP_ADDRESS="your_home_ip_here"
+          IP_ADDRESS="154.56.232.180"
           LOG_FILE="docs/network_log.csv"
           TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
