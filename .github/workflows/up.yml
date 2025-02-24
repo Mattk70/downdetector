@@ -28,10 +28,10 @@ jobs:
           fi
 
           # Check network status and log it
-          if ping -c 1 "$IP_ADDRESS" > /dev/null; then
-              STATUS="100"  # Convert "up" to 100 for Chart.js
+          if curl -s --head --request GET http://$IP_ADDRESS | grep "nginx" > /dev/null; then
+              STATUS="100" # Up
           else
-              STATUS="0"  # Convert "down" to 0
+              STATUS="0"  # Down
           fi
           
           echo "$TIMESTAMP,$STATUS" >> "$LOG_FILE"
