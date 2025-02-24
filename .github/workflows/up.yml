@@ -21,35 +21,27 @@ jobs:
           LOG_FILE="docs/network_log.csv"
           TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
+          # Create CSV file with headers if it doesn't exist
           if [ ! -f "$LOG_FILE" ]; then
-            echo "timestamp,status" > "$LOG_FILE"
+            echo "timestamp,uptime" > "$LOG_FILE"
           fi
 
+          # Check network status and log it
           if ping -c 1 "$IP_ADDRESS" > /dev/null; then
-              STATUS="up"
+              STATUS="100"  # Convert "up" to 100 for Chart.js
           else
-              STATUS="down"
+              STATUS="0"  # Convert "down" to 0
           fi
           
           echo "$TIMESTAMP,$STATUS" >> "$LOG_FILE"
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-          cache: "pip"
-
-      - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Generate Uptime Chart
-        run: python plot_network.py
 
       - name: Commit and Push Updates
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add docs/
-          git commit -m "Updated network uptime data and chart" || exit 0
+          
+          git pull --rebase  # Prevent conflicts with remote updates
+          
+          git add docs/network_log.csv
+          git commit -m "Updated network uptime log" || exit 0
           git push
