@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Network Uptime</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 </head>
 <body>
     <h1>Network Uptime</h1>
     <canvas id="uptimeChart"></canvas>
+    <button onclick="resetZoom()">Reset Zoom</button>
 
     <script>
+        let uptimeChart;
+
         async function fetchData() {
             const response = await fetch('network_log.csv'); // Adjust path if needed
             const data = await response.text();
@@ -28,8 +32,13 @@
                 }
             });
 
-            // Draw Chart
-            new Chart(document.getElementById("uptimeChart"), {
+            // Destroy previous chart instance if it exists
+            if (uptimeChart) {
+                uptimeChart.destroy();
+            }
+
+            // Draw Chart with Zoom & Pan Features
+            uptimeChart = new Chart(document.getElementById("uptimeChart"), {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -46,9 +55,29 @@
                     scales: {
                         x: { title: { display: true, text: "Timestamp" } },
                         y: { title: { display: true, text: "Uptime (%)" }, min: 0, max: 100 }
+                    },
+                    plugins: {
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x' // Allow panning in the x direction only
+                            },
+                            zoom: {
+                                mode: 'x',
+                                drag: {
+                                    enabled: true
+                                }
+                            }
+                        }
                     }
                 }
             });
+        }
+
+        function resetZoom() {
+            if (uptimeChart) {
+                uptimeChart.resetZoom();
+            }
         }
 
         fetchData();
