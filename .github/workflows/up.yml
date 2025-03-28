@@ -36,7 +36,7 @@ jobs:
               STATUS="0"  # Down
           fi
           
-          echo "$TIMESTAMP,$STATUS" >> "$LOG_FILE"
+          # echo "$TIMESTAMP,$STATUS" >> "$LOG_FILE"
 
           # Keep only the last 30 days of data
           (head -n1 "$LOG_FILE"; awk -F, -v date="$ONE_MONTH_AGO" 'NR==1 || $1 >= date' "$LOG_FILE") > temp.csv && mv temp.csv "$LOG_FILE"
